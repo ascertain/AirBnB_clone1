@@ -1,47 +1,57 @@
-#!/usr/bin/env python3
-"""
-Unitest for models/state.py
-
-Unittest classes:
-    test_state_instantiates
-    test_state_save
-    test_state_dict
-    """
-
+#!/usr/bin/python3
+'''testcase for state class'''
 import unittest
-import models
+import datetime
 from models.state import State
 
 
-class test_state_instantiates(unittest.TestCase):
-    """ Unittest for testing instantiation"""
+class TestState(unittest.TestCase):
+    '''
+    Test cases for the State class.
+    '''
+    def test_state(self):
+        '''testing'''
+        self.state = State()
+        self.assertIsInstance(self.state.id, str)
+        self.assertIsInstance(self.state.created_at, datetime.datetime)
+        self.assertIsInstance(self.state.updated_at, datetime.datetime)
 
-    def test_instantiation(self):
-        self.assertIs(State, type(State()))
+        self.state.name = 'Ada'
+        self.assertEqual(self.state.name, 'Ada')
 
-    def test_instantiation_with_kwargs(self):
-        self.assertIs(State, type(State(name="California")))
+        prev_updated_at = self.state.updated_at
+        self.state.save()
+        self.assertNotEqual(prev_updated_at, self.state.updated_at)
+
+        json_model = self.state.to_dict()
+        self.assertIsInstance(json_model, dict)
+        self.assertIn('__class__', json_model)
+        self.assertEqual(json_model['__class__'], 'State')
+        self.assertIsInstance(json_model['id'], str)
+        self.assertEqual(json_model['name'], 'Ada')
+        self.assertIsInstance(json_model['created_at'], str)
+        self.assertIsInstance(json_model['updated_at'], str)
+
+    def test_state_with_kwargs(self):
+        '''testing'''
+        date = datetime.datetime.today()
+        dt_frmt = date.isoformat()
+        state = State(
+                id="345",
+                name='George',
+                created_at=dt_frmt,
+                updated_at=dt_frmt
+                )
+        self.assertEqual(state.id, "345")
+        self.assertEqual(state.name, "George")
+        self.assertEqual(state.created_at, date)
+        self.assertEqual(state.updated_at, date)
+
+    def test_State_with_None_kwargs(self):
+        '''testing'''
+        with self.assertRaises(TypeError):
+            State(id=None, name='', created_at=None, updated_at=None)
 
 
-class test_state_save(unittest.TestCase):
-    """ Unittest for testing save"""
-
-    def test_save(self):
-        state = State()
-        state.save()
-        self.assertNotEqual(state.created_at, state.updated_at)
-
-    def test_save_updated(self):
-        state = State()
-        state.save()
-        state.save()
-        self.assertNotEqual(state.created_at, state.updated_at)
-
-    def test_save_to_json(self):
-        state = State()
-        state.save()
-        self.assertIs(type(state.to_dict()), dict)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        if __name__ == '__main__':
+            unittest.main()

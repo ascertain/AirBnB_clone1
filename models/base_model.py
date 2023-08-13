@@ -1,55 +1,50 @@
-#!/usr/bin/env python3
-""" BaseModel that defines all common attributes/methods for other classes """
-from uuid import uuid4
+#!/usr/bin/python3
+'''
+creating a Base model
+
+'''
+import uuid
 from datetime import datetime
-import models
 
 
 class BaseModel:
-    """Base class for all models"""
+    '''initializing base'''
+    unique_id = uuid.uuid4()
 
     def __init__(self, *args, **kwargs):
-        """ instantiates a new object
-            Args:
-                *args: variable length argument list not used
-                **kwargs: (key - value) pair of attributes
-            """
-        self.id = str(uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
-        if len(kwargs) > 0:
+        '''public instance'''
+        from models import storage
+
+        dt_obj = "%Y-%m-%dT%H:%M:%S.%f"
+        if kwargs is not None and kwargs != {}:
             for key, value in kwargs.items():
-                if key == 'created_at':
-                    self.created_at = datetime.strptime(value,
-                                                        '%Y-%m-%dT%H:%M:%S.%f')
-                elif key == 'updated_at':
-                    self.updated_at = datetime.strptime(value,
-                                                        '%Y-%m-%dT%H:%M:%S.%f')
+                if key == "created_at" or key == "updated_at":
+                    self.__dict__[key] = datetime.strptime(value, dt_obj)
                 else:
-                    if key != "__class__":
-                        setattr(self, key, value)
+                    self.__dict__[key] = value
         else:
-            models.storage.new(self)
+            self.id = str(BaseModel.unique_id)
+            self.created_at = datetime.now()
+            self.updated_at = self.created_at
+            storage.new(self)
 
     def __str__(self):
-        """ Returns a string representation of the object """
-        return "[{}] ({}) {}".format(
-                self.__class__.__name__,
-                self.id,
-                self.__dict__)
+        '''magic method'''
+        return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
 
     def save(self):
-        """ updates the public instance attribute
-        updated_at with current time"""
+        '''update datetime with current datetime'''
+        from models import storage
+
         self.updated_at = datetime.now()
-        models.storage.save()
+        storage.save()
 
     def to_dict(self):
-        """ Returns a dictionary containing all keys/values of __dict__
-        of the instance
-        """
-        new_dict = dict(self.__dict__)
-        new_dict["created_at"] = self.created_at.isoformat(sep='T')
-        new_dict["updated_at"] = self.updated_at.isoformat(sep='T')
-        new_dict["__class__"] = self.__class__.__name__
-        return new_dict
+        '''return dictionary - key/value'''
+        dic = self.__dict__.copy()
+
+        dic['__class__'] = self.__class__.__name__
+        dic['created_at'] = self.created_at.isoformat()
+        dic['updated_at'] = self.updated_at.isoformat()
+
+        return dic

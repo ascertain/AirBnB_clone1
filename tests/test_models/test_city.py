@@ -1,46 +1,66 @@
-#!/usr/bin/env python3
-"""
-unittests for the City class
-"""
+#!/usr/bin/python3
+'''testcase for city class'''
 import unittest
+import datetime
 from models.city import City
-from models.base_model import BaseModel
 
 
-class testfile(unittest.TestCase):
-    """ unittests for City class """
-    def test_inheritance(self):
-        """ checks if it inherits from BaseModel """
-        self.assertTrue(issubclass(City, BaseModel))
+class TestCity(unittest.TestCase):
+    '''
+    Test cases for the City class.
 
-    def test_attributes(self):
-        """ checks if it has the correct attributes """
-        self.assertTrue('state_id' in City.__dict__)
-        self.assertTrue('name' in City.__dict__)
+    '''
+    def test_city(self):
+        '''testing'''
+        self.city = City()
+        self.assertIsInstance(self.city.created_at, datetime.datetime)
+        self.assertIsInstance(self.city.updated_at, datetime.datetime)
 
-    def test_str(self):
-        """ checks if the str method works """
-        my_city = City()
-        string = "[City] ({}) {}".format(my_city.id, my_city.__dict__)
-        self.assertEqual(string, str(my_city))
+        self.city.name = 'Ada'
+        self.assertEqual(self.city.name, 'Ada')
 
-    def test_save(self):
-        """ checks if the save method works """
-        my_city = City()
-        my_city.save()
-        self.assertNotEqual(my_city.created_at, my_city.updated_at)
+        self.city.state_id = '3456'
+        self.assertEqual(self.city.state_id, '3456')
 
-    def test_to_dict(self):
-        """ checks if the to_dict method works """
-        my_city = City()
-        new_dict = my_city.to_dict()
-        self.assertEqual(type(new_dict), dict)
-        self.assertTrue('to_dict' in dir(my_city))
+        prev_updated_at = self.city.updated_at
+        self.city.save()
+        self.assertNotEqual(prev_updated_at, self.city.updated_at)
 
-    def test_docstring(self):
-        """ checks if the docstring is correct """
-        self.assertIsNotNone(City.__doc__)
+        json_model = self.city.to_dict()
+        self.assertIsInstance(json_model, dict)
+        self.assertIn('__class__', json_model)
+        self.assertEqual(json_model['__class__'], 'City')
+        self.assertIsInstance(json_model['state_id'], str)
+        self.assertEqual(json_model['name'], 'Ada')
+        self.assertIsInstance(json_model['created_at'], str)
+        self.assertIsInstance(json_model['updated_at'], str)
+
+    def test_city_with_kwargs(self):
+        '''testing'''
+        date = datetime.datetime.today()
+        dt_frmt = date.isoformat()
+        city = City(
+                state_id="345",
+                name='George',
+                created_at=dt_frmt,
+                updated_at=dt_frmt
+                )
+        self.assertEqual(city.state_id, "345")
+        self.assertEqual(city.name, "George")
+        self.assertEqual(city.created_at, date)
+        self.assertEqual(city.updated_at, date)
+
+    def test_city_with_none_kwargs(self):
+        '''testing'''
+        with self.assertRaises(TypeError):
+            City(
+                    id=None,
+                    name='',
+                    state_id='',
+                    created_at=None,
+                    updated_at=None
+                    )
 
 
-if __name__ == "__main__":
-    unittest.main()
+        if __name__ == '__main__':
+            unittest.main()
