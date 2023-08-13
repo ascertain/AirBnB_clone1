@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-'''creating User class that inherits from BaseModel'''
-from models import storage
+'''A class user that inherent from BaseModel'''
 from models.base_model import BaseModel
 
 
 class User(BaseModel):
-    '''user'''
+    '''represent a class User'''
+
     email = ""
     password = ""
     first_name = ""
